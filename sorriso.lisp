@@ -107,10 +107,11 @@
               (dolist (category (get-sorriso-data))
                 (output-category category hs)))
         (:div :id "order"
-              (:h2 (str "Comanda curenta"))
-              (:div :id "add-client" "Adauga client"))
+              (:h2 (str "Comanda curentă"))
+              (:div :id "add-client" "Adaugă client"))
         (:div :id "add-client-form"
-              :title "Adauga client"
+              :title "Adaugă client"
+              (:p :id "validateTips" "Introduceţi un nume.")
               (:form
                (:fieldset
                 (:label :for "name" "Nume")
@@ -133,13 +134,14 @@
     ((".order-item-button") (:font-size "6px !important"))
     ((".section-title") (:font-size "small"
                                     :font-weight "bold"))
+    ((".client-name") (:font-weight "bold"))
     ((".client-order") (:padding "5px"
                                  :margin "5px"
                                  :background-color "#ffb040"
                                  :border-radius "6px"
                                  :-webkit-border-radius "6px"
                                  :-moz-border-radius "6px"))
-    (("#order") (:background-color "#eee"
+    (("#order") (:background-color "white"
                                    :width "20%"
                                    :height "100%"
                                    :padding-left "10px"
@@ -168,27 +170,39 @@
         (let ((element ($ "<div/>"))
               (title ($ "<span/>")))
           ((@ title text) client-name)
+          ((@ title add-class) "client-name")
           ((@ element append) (make-close-button element) title)
           ((@ element add-class) "client-order")
           ((@ element droppable)
            (create "drop" (lambda (event ui)
                             ((@ ($ this) append)
-                             (make-order-item ui)))))
+                             (make-order-item ui)))
+                   "tolerance" "pointer"))
           element))
       (defun new-client ()
-        ((@ ($ "#order") append)
-         (make-client-area ((@ ($ "#name") val))))
-        ((@ console log) "adaug client")
-        ((@ ($ "#add-client-form") dialog) "close"))
+        (let ((name-element ($ "#name"))
+              (valid true))
+          ((@ name-element remove-class) "ui-state-error")
+          (when (eql 0 (length ((@ name-element val))))
+            (setf valid false)
+            ((@ name-element add-class) "ui-state-error")
+            ((@ ($ "#validateTips") add-class) "ui-state-highlight")
+            (set-timeout (lambda ()
+                           ((@ ($ "#validateTips") remove-class) "ui-state-highlight"))
+                         1500))
+          (when valid
+            ((@ ($ "#order") append)
+             (make-client-area ((@ name-element val))))
+            ((@ ($ "#add-client-form") dialog) "close"))))
       ((@ ($ document) ready)
        (lambda ()
          ((@ ($ "#add-client-form") dialog)
           (create "autoOpen" false
                   "modal" t
-                  "buttons" (create "Renunta"
+                  "buttons" (create "Renunţă"
                                     (lambda ()
                                       ((@ ($ this) dialog) "close"))
-                                    "Adauga" new-client)))
+                                    "Adaugă" new-client)))
          (chain ((@ ($ "#add-client") button))
                 (click (lambda ()
                          ((@ ($ "#name") val) "")
@@ -197,8 +211,7 @@
           (lambda (e)
             (when (= 13 (@ e key-code))
               (new-client)
-              ((@ e prevent-default)))
-            ((@ console log) e)))
+              ((@ e prevent-default)))))
          ((@ ($ ".item") draggable)
           (create "revert" t
                   "revertDuration" 200
