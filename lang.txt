@@ -1,0 +1,18 @@
+current-command
+Comanda curentă
+
+add-client
+Adaugă client
+
+enter-a-name
+Introduceţi un nume.
+
+give-up
+Renunţă
+
+add
+Adaugă
+
+
+
+

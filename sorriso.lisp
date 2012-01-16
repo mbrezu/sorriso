@@ -10,6 +10,31 @@
 
 (defvar *sorriso-data-time* nil)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defvar *translation-hash* nil)
+  (defun slurp-file-as-string (file-name)
+    (with-open-file (str (asdf:system-relative-pathname :sorriso file-name)
+                         :element-type '(mod 256))
+      (let ((bytes (make-array (list (file-length str)) :element-type '(mod 256))))
+        (read-sequence bytes str)
+        (babel:octets-to-string bytes))))
+  (defun translate (str)
+    (when (not *translation-hash*)
+      (setf *translation-hash* (make-hash-table :test #'equal))
+      (dolist (pair (-> "lang.txt"
+                        slurp-file-as-string
+                        (split-sequence:split-sequence #\Newline $ :remove-empty-subseqs t)
+                        (group $ 2)))
+        (setf (gethash (first pair) *translation-hash*)
+              (second pair))))
+    (gethash str *translation-hash*))
+  (set-dispatch-macro-character
+   #\# #\"
+   #'(lambda (s c1 c2)
+       (declare (ignore c2))
+       (unread-char c1 s)
+       (translate (read s)))))
+
 (defun get-sorriso-data ()
   (labels ((string-extract (parsed-html)
              (cond ((stringp parsed-html) (list parsed-html))
@@ -107,11 +132,11 @@
               (dolist (category (get-sorriso-data))
                 (output-category category hs)))
         (:div :id "order"
-              (:h2 (str "Comanda curentă"))
-              (:div :id "add-client" "Adaugă client"))
+              (:h2 (str #"current-command"))
+              (:div :id "add-client" (str #"add-client")))
         (:div :id "add-client-form"
-              :title "Adaugă client"
-              (:p :id "validateTips" "Introduceţi un nume.")
+              :title (str #"add-client")
+              (:p :id "validateTips" (str #"enter-a-name"))
               (:form
                (:fieldset
                 (:label :for "name" "Nume")
@@ -199,10 +224,10 @@
          ((@ ($ "#add-client-form") dialog)
           (create "autoOpen" false
                   "modal" t
-                  "buttons" (create "Renunţă"
+                  "buttons" (create #"give-up"
                                     (lambda ()
                                       ((@ ($ this) dialog) "close"))
-                                    "Adaugă" new-client)))
+                                    #"add" new-client)))
          (chain ((@ ($ "#add-client") button))
                 (click (lambda ()
                          ((@ ($ "#name") val) "")
@@ -213,7 +238,6 @@
               (new-client)
               ((@ e prevent-default)))))
          ((@ ($ ".item") draggable)
-          (create "revert" t
-                  "revertDuration" 200
-                  "helper" "clone"
+          (create "helper" "clone"
+                  "revert" "invalid"
                   "zIndex" 3000)))))))

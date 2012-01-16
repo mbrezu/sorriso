@@ -9,6 +9,8 @@
                #:css-lite
                #:drakma
                #:closure-html
-               #:mbrezu-utils)
+               #:mbrezu-utils
+               #:babel
+               #:split-sequence)
   :components ((:file "package")
                (:file "sorriso")))
