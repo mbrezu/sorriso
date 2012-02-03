@@ -157,7 +157,7 @@
                          ))
     ((".item") (:font-size "small"))
     ((".order-item") (:font-size "small"))
-    ((".order-item-button") (:font-size "6px !important"))
+    ((".order-item-button") (:font-size "x-small"))
     ((".section-title") (:font-size "small"
                                     :font-weight "bold"))
     ((".client-name") (:font-weight "bold"))
