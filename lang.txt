@@ -13,6 +13,16 @@ Renunţă
 add
 Adaugă
 
+sure?
+Sigur?
 
+yes
+da
+
+no
+nu
+
+edit
+Modifică
 
 
