@@ -134,7 +134,9 @@
                 (output-category category hs)))
         (:div :id "order"
               (:h2 (str #"current-command"))
-              (:div :id "add-client" (str #"add-client")))
+              (:div :id "drag-n-drop-here"
+                    :class "drag-n-drop-here"
+                    (str #"drag-n-drop-here")))
         (:div :id "add-client-form"
               :title (str #"add-client")
               (:p :id "validateTips" (str #"enter-a-name"))
@@ -159,10 +161,17 @@
     ((".item") (:font-size "small"))
     ((".order-item") (:font-size "small"))
     ((".order-item-button") (:font-size "x-small"))
+    ((".small-print") (:font-size "x-small"))
     ((".section-title") (:font-size "small"
                                     :font-weight "bold"))
     ((".client-name") (:font-weight "bold"))
     ((".client-order") (:padding "5px"
+                                 :margin "5px"
+                                 :background-color "#ffb040"
+                                 :border-radius "6px"
+                                 :-webkit-border-radius "6px"
+                                 :-moz-border-radius "6px"))
+    ((".drag-n-drop-here") (:padding "5px"
                                  :margin "5px"
                                  :background-color "#ffb040"
                                  :border-radius "6px"
@@ -191,7 +200,8 @@
   (ps (defun make-close-button (element)
         (let* ((confirm ($ "<span/>"))
                (prompt (chain ($ "<span/>")
-                              (text #"sure?")))
+                              (text #"sure?")
+                              (add-class "small-print")))
                (yes-button (make-button #"yes" (lambda ()
                                                  (chain element (remove)))))
                (no-button (make-button #"no" (lambda ()
@@ -216,10 +226,10 @@
                                       (setf should-edit true)
                                       (setf element-to-edit element)
                                       (open-dialog))))))
-  (ps (defun make-order-item (ui)
+  (ps (defun make-order-item (order-item)
         (let ((element ($ "<div/>"))
               (text (chain ($ "<span/>")
-                           (text (chain ui helper (text))))))
+                           (text order-item))))
           (chain element
                  (add-class "order-item")
                  (append (make-close-button element) text)))))
@@ -240,7 +250,7 @@
                  (add-class "client-order")
                  (droppable (create "drop" (lambda (event ui)
                                              (chain ($ this)
-                                                    (append (make-order-item ui))))
+                                                    (append (make-order-item (chain ui helper (text))))))
                                     "tolerance" "pointer"))))))
   (ps (defun new-client ()
         (let ((name-element ($ "#name"))
@@ -260,9 +270,16 @@
                          1500))
           (when valid
             (when (not should-edit)
-              (chain ($ "#order")
-                     (append (make-client-area (chain name-element (val))
-                                               (chain notes-element (val))))))
+              (let ((new-client-area (make-client-area (chain name-element (val))
+                                                       (chain notes-element (val)))))
+                (chain ($ "#order")
+                       (append new-client-area))
+                (when dropped-data
+                  (chain new-client-area
+                         (append (make-order-item dropped-data)))
+                  (chain ($ "#drag-n-drop-here")
+                         (text #"same-command-new-client"))
+                  (setf dropped-data nil))))
             (when  should-edit
               (chain element-to-edit
                      (attr "client-name" (chain name-element (val)))
@@ -275,10 +292,10 @@
                      (text (chain notes-element (val)))))
             (chain ($ "#add-client-form")
                    (dialog "close"))))))
-
   (ps (defvar dialog-is-open false))
   (ps (defvar should-edit false))
   (ps (defvar element-to-edit null))
+  (ps (defvar dropped-data null))
   (ps (defun open-dialog ()
         (setf dialog-is-open true)
         (chain ($ "#add-client-form")
@@ -296,15 +313,15 @@
                                                              #"add" new-client)
                                            "close" (lambda (event ui)
                                                      (setf dialog-is-open false)))))
-                    (chain ($ "#add-client")
-                           (button)
-                           (click (lambda ()
-                                    (chain ($ "#name")
-                                           (val ""))
-                                    (chain ($ "#notes")
-                                           (val ""))
-                                    (setf should-edit false)
-                                    (open-dialog))))
+                    (chain ($ "#drag-n-drop-here")
+                           (droppable (create "drop"
+                                              (lambda (event ui)
+                                                (chain ($ "#name") (val ""))
+                                                (chain ($ "#notes") (val ""))
+                                                (setf should-edit false)
+                                                (setf dropped-data (chain ui helper (text)))
+                                                (open-dialog))
+                                              "tolerance" "pointer")))
                     (chain ($ "#add-client-form")
                            (keydown (lambda (e)
                                       (when (= 13 (@ e key-code))

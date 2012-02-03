@@ -1,8 +1,11 @@
 current-command
 Comanda curentă
 
+drag-n-drop-here
+Drag-n-drop mâncare aici pentru a crea comanda.
+
 add-client
-Adaugă client
+Adaugare client
 
 enter-a-name
 Introduceţi un nume.
@@ -14,7 +17,7 @@ add
 Adaugă
 
 sure?
-Sigur?
+Sigur ştergeţi? 
 
 yes
 da
@@ -25,4 +28,5 @@ nu
 edit
 Modifică
 
-
+same-command-new-client
+Drag-n-drop mâncare aici pentru a adauga alt client în aceeaşi comandă.
