@@ -172,11 +172,11 @@
                                  :-webkit-border-radius "6px"
                                  :-moz-border-radius "6px"))
     ((".drag-n-drop-here") (:padding "5px"
-                                 :margin "5px"
-                                 :background-color "#ffb040"
-                                 :border-radius "6px"
-                                 :-webkit-border-radius "6px"
-                                 :-moz-border-radius "6px"))
+                                     :margin "5px"
+                                     :background-color "#ffb040"
+                                     :border-radius "6px"
+                                     :-webkit-border-radius "6px"
+                                     :-moz-border-radius "6px"))
     (("#order") (:background-color "white"
                                    :width "20%"
                                    :height "100%"
@@ -198,7 +198,8 @@
                (button)
                (click action))))
   (ps (defun make-close-button (element)
-        (let* ((confirm ($ "<span/>"))
+        (let* ((confirm (chain ($ "<span/>")
+                               (add-class "confirmation")))
                (prompt (chain ($ "<span/>")
                               (text #"sure?")
                               (add-class "small-print")))
@@ -208,6 +209,8 @@
                                                (chain confirm
                                                       (css "display" "none")))))
                (button (make-button "X" (lambda ()
+                                          (chain ($ ".confirmation")
+                                                 (css "display" "none"))
                                           (chain confirm
                                                  (css "display" "inline"))))))
           (chain confirm
@@ -250,7 +253,8 @@
                  (add-class "client-order")
                  (droppable (create "drop" (lambda (event ui)
                                              (chain ($ this)
-                                                    (append (make-order-item (chain ui helper (text))))))
+                                                    (append (make-order-item
+                                                             (chain ui helper (text))))))
                                     "tolerance" "pointer"))))))
   (ps (defun new-client ()
         (let ((name-element ($ "#name"))
