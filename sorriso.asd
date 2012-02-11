@@ -5,6 +5,7 @@
   :depends-on (#:alexandria
                #:hunchentoot
                #:cl-who
+               #:cl-ppcre
                #:parenscript
                #:css-lite
                #:drakma
