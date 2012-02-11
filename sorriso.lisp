@@ -80,7 +80,9 @@
   (let (result)
     (cl-fad:walk-directory (asdf:system-relative-pathname :sorriso "static")
                            (lambda (file-path)
-                             (let* ((file-name (namestring file-path))
+                             (let* ((file-name (-> file-path
+                                                   namestring
+                                                   #+ccl (cl-ppcre:regex-replace-all "\\\\\\." $ ".")))
                                     (static-pos (search "/static/" file-name)))
                                (when static-pos
                                  (push (subseq file-name static-pos)
